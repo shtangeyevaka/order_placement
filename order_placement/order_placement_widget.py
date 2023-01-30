@@ -8,9 +8,6 @@ from order_placement.view import BaseItemWidget, HeadlightItemWidget, DoorItemWi
 from order_placement_widget_ui import Ui_Form
 
 
-FILE_NAME = 'order.yml'
-
-
 class OrderPlacementWidget(QtWidgets.QWidget):
 
     ITEMS_WIDGETS = {
@@ -62,10 +59,13 @@ class OrderPlacementWidget(QtWidgets.QWidget):
         self._order.remove_item(item_widget.item)
 
     def _on_btn_open_clicked(self):
-        self._order.load_from_file(FILE_NAME)
+        file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Choose file', filter='*.yml')
+        if file_name:
+            self._order.load_from_file(file_name)
 
     def _on_btn_save_clicked(self):
-        self._order.save_to_file(FILE_NAME)
+        file_name, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Choose file', filter='*.yml')
+        self._order.save_to_file(file_name)
 
     def _on_btn_add_clicked(self):
         item_name = self._ui.cmb_items.currentText()
