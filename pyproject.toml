@@ -15,7 +15,6 @@ peachpayments-partner-marshmallow = "^0.2.9"
 
 
 [tool.poetry.group.dev.dependencies]
-pyqt5designer = "^5.14.1"
 pytest = "^7.2.1"
 
 [build-system]
