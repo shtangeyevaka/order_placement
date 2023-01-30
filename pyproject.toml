@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "order-placement"
+version = "0.1.0"
+description = ""
+authors = ["Shtangeeva Kseniya <zhiber.ksenya@gmail.com>"]
+readme = "README.md"
+packages = [{include = "order_placement"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pyqt5 = "^5.15.7"
+pyyaml = "^6.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pyqt5designer = "^5.14.1"
+pytest = "^7.2.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
