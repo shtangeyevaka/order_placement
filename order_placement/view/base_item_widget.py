@@ -24,7 +24,7 @@ class BaseItemWidget(QtWidgets.QWidget):
         self._ui.verticalLayout.insertLayout(0, header_layout)
 
         lbl_name = QtWidgets.QLabel(self)
-        lbl_name.setText(self.item.NAME.capitalize())
+        lbl_name.setText(self.item.TITLE.capitalize())
         header_layout.addWidget(lbl_name)
 
         self._btn_remove = QtWidgets.QPushButton(self)
@@ -49,7 +49,6 @@ class BaseItemWidget(QtWidgets.QWidget):
     @abc.abstractmethod
     def _update_by_item(self, item: BaseItem):
         self._ui.spb_quantity.setMinimum(1)
-        self._ui.spb_quantity.setMaximum(item.MAX_QUANTITY)
         self._ui.spb_quantity.setValue(item.quantity)
 
     def _connect_signals(self):

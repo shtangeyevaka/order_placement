@@ -10,6 +10,8 @@ packages = [{include = "order_placement"}]
 python = "^3.11"
 pyqt5 = "^5.15.7"
 pyyaml = "^6.0"
+marshmallow-oneofschema = "^3.0.1"
+peachpayments-partner-marshmallow = "^0.2.9"
 
 
 [tool.poetry.group.dev.dependencies]

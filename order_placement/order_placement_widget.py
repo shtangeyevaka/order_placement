@@ -4,13 +4,14 @@ from typing import Optional, List, Dict
 from PyQt5 import QtWidgets
 
 from order_placement.model import BaseItem, HeadlightItem, DoorItem, EngineItem, Order
+from order_placement.model.order import InvalidOrderFileException
 from order_placement.view import BaseItemWidget, HeadlightItemWidget, DoorItemWidget, EngineItemWidget
 from order_placement_widget_ui import Ui_Form
 
 
 class OrderPlacementWidget(QtWidgets.QWidget):
 
-    ITEMS_WIDGETS = {
+    _ITEMS_WIDGETS = {
         HeadlightItem: HeadlightItemWidget,
         DoorItem: DoorItemWidget,
         EngineItem: EngineItemWidget
@@ -21,7 +22,7 @@ class OrderPlacementWidget(QtWidgets.QWidget):
         self._ui = Ui_Form()
         self._ui.setupUi(self)
 
-        self._ui.cmb_items.addItems(item_cls.NAME for item_cls in self.ITEMS_WIDGETS)
+        self._ui.cmb_items.addItems(item_cls.TITLE for item_cls in self._ITEMS_WIDGETS)
         self._ui.btn_open.clicked.connect(self._on_btn_open_clicked)
         self._ui.btn_save.clicked.connect(self._on_btn_save_clicked)
         self._ui.btn_add.clicked.connect(self._on_btn_add_clicked)
@@ -32,7 +33,7 @@ class OrderPlacementWidget(QtWidgets.QWidget):
         self._items_widgets: Dict[BaseItem, BaseItemWidget] = dict()
 
     def _add_item_widget(self, item: BaseItem) -> Optional[BaseItemWidget]:
-        widget_cls = self.ITEMS_WIDGETS.get(type(item))
+        widget_cls = self._ITEMS_WIDGETS.get(type(item))
         if not widget_cls:
             return None
 
@@ -48,7 +49,7 @@ class OrderPlacementWidget(QtWidgets.QWidget):
         self._ui.layout_items.removeWidget(item_widget)
         item_widget.deleteLater()
 
-    def _on_items_changed(self, removed_items: List[BaseItem], added_items: List[BaseItem]):
+    def _on_items_changed(self, added_items: List[BaseItem], removed_items: List[BaseItem]):
         for item in removed_items:
             self._remove_item_widget(item)
 
@@ -60,8 +61,13 @@ class OrderPlacementWidget(QtWidgets.QWidget):
 
     def _on_btn_open_clicked(self):
         file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Choose file', filter='*.yml')
-        if file_name:
+        if not file_name:
+            return
+
+        try:
             self._order.load_from_file(file_name)
+        except InvalidOrderFileException:
+            QtWidgets.QMessageBox.warning(self, 'Order file load', 'Invalid file format!')
 
     def _on_btn_save_clicked(self):
         file_name, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Choose file', filter='*.yml')
