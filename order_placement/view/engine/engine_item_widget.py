@@ -18,12 +18,15 @@ class EngineItemWidget(BaseItemWidget):
         self._ui.cmb_gas_capacity.addItems(item.CAPACITY_RANGE[FuelType.GAS])
         self._ui.cmb_diesel_capacity.addItems(item.CAPACITY_RANGE[FuelType.DIESEL])
 
-        btn_type, _, _ = self._get_widgets_by_fuel_type(self.item.item_type)
+        btn_type, _, cmb_capacity = self._get_widgets_by_fuel_type(self.item.item_type)
         btn_type.setChecked(True)
-        self._on_btn_type_toggled()
+        self._update_widgets_enabled_state()
+        cmb_capacity.setCurrentText(item.capacity)
 
     def _connect_signals(self):
-        for fuel_type in FuelType:
+        super()._connect_signals()
+
+        for fuel_type in FuelType.to_list():
             btn_type, _, cmb_capacity = self._get_widgets_by_fuel_type(fuel_type)
             btn_type.toggled.connect(self._on_btn_type_toggled)
             cmb_capacity.currentIndexChanged.connect(self._on_cmb_capacity_changed)
@@ -32,14 +35,17 @@ class EngineItemWidget(BaseItemWidget):
         selected_type = self._get_selected_type()
         self.item.item_type = selected_type
 
-        for fuel_type in FuelType:
+        self._update_widgets_enabled_state()
+
+        _, _, cmb_capacity = self._get_widgets_by_fuel_type(selected_type)
+        self.item.capacity = cmb_capacity.currentText()
+
+    def _update_widgets_enabled_state(self):
+        for fuel_type in FuelType.to_list():
             _, lbl, cmb_capacity = self._get_widgets_by_fuel_type(fuel_type)
-            is_enabled = fuel_type == selected_type
+            is_enabled = fuel_type == self.item.item_type
             lbl.setEnabled(is_enabled)
             cmb_capacity.setEnabled(is_enabled)
-
-            if is_enabled:
-                self.item.capacity = cmb_capacity.currentText()
 
     def _on_cmb_capacity_changed(self):
         selected_type = self._get_selected_type()

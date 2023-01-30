@@ -28,6 +28,10 @@ class FuelType(enum.StrEnum):
     GAS = 'gas'
     DIESEL = 'diesel'
 
+    @classmethod
+    def to_list(cls):
+        return [c.value for c in cls]
+
 
 class EngineItem(BaseItem):
     TITLE = 'engine'
@@ -40,4 +44,4 @@ class EngineItem(BaseItem):
 
     def __init__(self, item_type: Optional[FuelType] = None, capacity: Optional[str] = None, quantity: int = 1):
         super().__init__(item_type, quantity)
-        self.capacity = capacity if capacity is not None else self.CAPACITY_RANGE[self.item_type]
+        self.capacity = capacity if capacity is not None else self.CAPACITY_RANGE[self.item_type][0]
