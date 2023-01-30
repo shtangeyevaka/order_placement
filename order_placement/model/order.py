@@ -46,19 +46,21 @@ class Order(QtCore.QObject):
         return self._items
 
     def load_from_file(self, file_name: str):
-        removed_items = self._items.copy()
-        for item in removed_items:
-            self._remove_item_impl(item)
-
         with open(file_name) as f:
             order_schema = self._get_schema()
             try:
                 data = yaml.full_load(f)
                 loaded_order_model = order_schema.load(data)
+                new_items = loaded_order_model.items
             except (ValidationError, yaml.YAMLError) as exc:
                 raise InvalidOrderFileException() from exc
-            self._items = loaded_order_model.items
 
+        # remove old items and save new items
+        removed_items = self._items.copy()
+        for item in removed_items:
+            self._remove_item_impl(item)
+
+        self._items = new_items
         self.items_changed.emit(self._items, removed_items)
 
     def save_to_file(self, file_name: str):

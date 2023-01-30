@@ -45,7 +45,7 @@ class OrderPlacementWidget(QtWidgets.QWidget):
 
     def _remove_item_widget(self, item: BaseItem):
         item_widget = self._items_widgets[item]
-        del self._items_widgets[item_widget.item]
+        del self._items_widgets[item]
         self._ui.layout_items.removeWidget(item_widget)
         item_widget.deleteLater()
 
