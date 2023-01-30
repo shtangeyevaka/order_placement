@@ -1,3 +1,5 @@
+import typing
+
 from marshmallow import fields, validate, Schema, post_load, ValidationError, pre_dump, validates_schema
 from marshmallow_oneofschema import OneOfSchema
 
@@ -13,13 +15,48 @@ class HeadlightSchema(Schema):
         return HeadlightItem(**data)
 
 
+class DoorTypeField(fields.Field):
+    """Represents door type regardless order of positions (e.g. ['left', 'back'] is equal to ['back', 'left])."""
+    _FIELDS = [
+            fields.String(validate=validate.OneOf(DoorItem.HOR_TYPES_RANGE)),
+            fields.String(validate=validate.OneOf(DoorItem.VER_TYPES_RANGE)),
+    ]
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._hor_ver_field = fields.Tuple(self._FIELDS, attribute=self.attribute)
+        self._ver_hor_field = fields.Tuple(self._FIELDS[::-1], attribute=self.attribute)
+
+    def serialize(
+        self,
+        attr: str,
+        obj: typing.Any,
+        accessor: typing.Optional[
+            typing.Callable[[typing.Any, str, typing.Any], typing.Any]
+        ] = None,
+        **kwargs
+    ):
+        result = self._hor_ver_field.serialize(attr, obj, accessor, **kwargs)
+        if isinstance(result, tuple):
+            result = list(result)
+        return result
+
+    def deserialize(
+        self,
+        value: typing.Any,
+        attr: typing.Optional[str] = None,
+        data: typing.Optional[typing.Mapping[str, typing.Any]] = None,
+        **kwargs
+    ):
+        try:
+            return self._hor_ver_field.deserialize(value, attr, data, **kwargs)
+        except ValidationError:
+            return self._ver_hor_field.deserialize(value, attr, data, **kwargs)[::-1]
+
+
 class DoorSchema(Schema):
-    qty = fields.Integer(required=True, attribute='quantity')
-    type = fields.Tuple(
-        [fields.String(validate=validate.OneOf(DoorItem.HOR_TYPES_RANGE)),
-         fields.String(validate=validate.OneOf(DoorItem.VER_TYPES_RANGE)), ],
-        attribute='item_type'
-    )
+    qty = fields.Integer(required=True, validate=validate.Range(min=1, max=None), attribute='quantity')
+    type = DoorTypeField(attribute="item_type")
 
     @post_load
     def make_door_item(self, data, **kwargs) -> DoorItem:
@@ -27,7 +64,7 @@ class DoorSchema(Schema):
 
 
 class EngineSchema(Schema):
-    qty = fields.Integer(required=True, attribute='quantity')
+    qty = fields.Integer(required=True, validate=validate.Range(min=1, max=None), attribute='quantity')
     type = fields.String(required=True, validate=validate.OneOf(EngineItem.TYPES_RANGE), attribute='item_type')
     capacity = fields.String(required=True)
 
